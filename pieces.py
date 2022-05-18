@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from string import ascii_lowercase
 import abc
 import math
 import time
@@ -39,16 +39,19 @@ class Board:
         return self.board.shape >= pos
 
     def draw_square(self, term: Terminal, coord: NDArray[int, int], color: Color):
-        scale = np.array([1,2], dtype=int)
+        scale = np.array([2, 4], dtype=int)
         coord_scaled = scale * coord
+        if color == Color.WHITE:
+            col = term.on_sienna
+        else:
+            col = term.on_peru
         # print(print(coord, coord_scaled))
         for i in range(coord_scaled[0], coord_scaled[0] + scale[0]):
             for j in range(coord_scaled[1], coord_scaled[1] + scale[1]):
                 echo(term.move_yx(i, j))
-                if color==Color.WHITE:
-                    echo(term.on_black(u' '))
-                else:
-                    echo(term.on_white(u'\u2655'))
+                echo(col(u'\u2655'))
+        echo(term.move(coord_scaled[0], coord_scaled[1]))
+        echo(col(f'{ascii_lowercase[coord[1]]}{coord[0]}',))
 
     def draw(self, term: Terminal):
         color_bg = term.on_blue
@@ -56,13 +59,15 @@ class Board:
         echo(color_bg(term.clear))
         for i in range(self.board.shape[0]):
             for j in range(self.board.shape[1]):
-                if i%2 and not j%2 or not i%2 and j%2:
+                if i % 2 and not j % 2 or not i % 2 and j % 2:
                     self.draw_square(term, np.array([i, j], dtype=int), Color.WHITE)
                 else:
                     self.draw_square(term, np.array([i, j], dtype=int), Color.BLACK)
 
-    def set_piece(self,piece:Piece):
+    def set_piece(self, piece: Piece):
         pass
+
+
 class Color(Enum):
     WHITE = 1
     BLACK = 0
@@ -72,8 +77,6 @@ class Piece:
     def __init__(self, color: Color.WHITE, pos: NDArray[int, int]):
         self.color = color
         self.pos = pos
-
-
 
     def __hash__(self):
         return self.pos
@@ -173,4 +176,3 @@ class Game:
 
 g = Game()
 g.draw()
-
