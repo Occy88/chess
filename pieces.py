@@ -48,7 +48,7 @@ class Board:
                 if color==Color.WHITE:
                     echo(out.on_black(u' '))
                 else:
-                    echo(out.on_white(u' '))
+                    echo(out.on_white(u'U+2654'))
 
     def draw(self, out: Terminal):
         color_bg = out.on_blue
