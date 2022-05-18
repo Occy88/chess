@@ -11,7 +11,7 @@ from blessed import Terminal
 from functools import partial
 
 # python 2/3 compatibility, provide 'echo' function as an
-# alias for "print without newline and flush"
+# alias for "print withterm newline and flush"
 try:
     # pylint: disable=invalid-name
     #         Invalid constant name "echo"
@@ -24,8 +24,8 @@ except TypeError:
 
     def echo(text):
         """Python 2 version of print(end='', flush=True)."""
-        sys.stdout.write(u'{0}'.format(text))
-        sys.stdout.flush()
+        sys.stdterm.write(u'{0}'.format(text))
+        sys.stdterm.flush()
 
 
 class Board:
@@ -38,28 +38,28 @@ class Board:
     def validate_pos(self, pos: NDArray[int, int]):
         return self.board.shape >= pos
 
-    def draw_square(self, out: Terminal, coord: NDArray[int, int], color: Color):
-        scale = np.array([5,10], dtype=int)
+    def draw_square(self, term: Terminal, coord: NDArray[int, int], color: Color):
+        scale = np.array([1,2], dtype=int)
         coord_scaled = scale * coord
         # print(print(coord, coord_scaled))
         for i in range(coord_scaled[0], coord_scaled[0] + scale[0]):
             for j in range(coord_scaled[1], coord_scaled[1] + scale[1]):
-                echo(out.move_yx(i, j))
+                echo(term.move_yx(i, j))
                 if color==Color.WHITE:
-                    echo(out.on_black(u' '))
+                    echo(term.on_black(u' '))
                 else:
-                    echo(out.on_white(u'U+2654'))
+                    echo(term.on_white(u'\u2655'))
 
-    def draw(self, out: Terminal):
-        color_bg = out.on_blue
-        echo(out.move_yx(1, 1))
-        echo(color_bg(out.clear))
+    def draw(self, term: Terminal):
+        color_bg = term.on_blue
+        echo(term.move_yx(1, 1))
+        echo(color_bg(term.clear))
         for i in range(self.board.shape[0]):
             for j in range(self.board.shape[1]):
                 if i%2 and not j%2 or not i%2 and j%2:
-                    self.draw_square(out, np.array([i, j], dtype=int), Color.WHITE)
+                    self.draw_square(term, np.array([i, j], dtype=int), Color.WHITE)
                 else:
-                    self.draw_square(out, np.array([i, j], dtype=int), Color.BLACK)
+                    self.draw_square(term, np.array([i, j], dtype=int), Color.BLACK)
 
     def set_piece(self,piece:Piece):
         pass
@@ -159,15 +159,15 @@ class King(Piece):
 
 class Game:
     def __init__(self, board=Board()):
-        self.out = Terminal()
+        self.term = Terminal()
         self.board = board
 
     def draw(self):
         inp = None
-        with self.out.hidden_cursor(), self.out.cbreak(), self.out.location():
+        with self.term.hidden_cursor(), self.term.cbreak(), self.term.location():
             while inp not in (u'q', u'Q'):
-                # inp = self.out.inkey()
-                self.board.draw(self.out)
+                # inp = self.term.inkey()
+                self.board.draw(self.term)
                 time.sleep(10)
 
 
